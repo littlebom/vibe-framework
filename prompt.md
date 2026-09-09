@@ -63,7 +63,7 @@ npm install
 ```
 *(กรณีใช้ Windows PowerShell แล้วพบ Error สีแดงเรื่อง Script Execution Policy ให้พิมพ์ `npm.cmd install` หรือสั่ง `Set-ExecutionPolicy -Scope Process Bypass`)*
 
-### 1.3 ตั้งค่าระบบอัตโนมัติ (สร้าง .env + เปิด Docker Postgres + Migrate + Seed ข้อมูล)
+### 1.3 ตั้งค่าระบบอัตโนมัติ (สร้าง .env + Migrate + Seed ข้อมูล)
 ```bash
 npm run setup
 ```

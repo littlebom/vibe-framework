@@ -38,7 +38,7 @@ try {
   console.log("✅ Migration สำเร็จ\n");
 } catch (error) {
   console.warn("⚠️  ไม่สามารถเชื่อมต่อฐานข้อมูลเพื่อ Migrate ได้ กรุณาตรวจสอบว่า Postgres รันอยู่และสร้างฐานข้อมูลแล้ว:");
-  console.warn("   คำสั่งสร้างฐานข้อมูล: createdb ums_dev (หรือ docker compose up -d postgres)\n");
+  console.warn("   คำสั่งสร้างฐานข้อมูล: createdb -U postgres ums_dev\n");
 }
 
 // 4. Prisma seed
