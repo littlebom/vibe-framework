@@ -15,29 +15,7 @@
 คัดลอก Prompt ด้านล่างแล้วเปลี่ยนคำใน `[ ... ]` ให้เป็นโจทย์ของตนเอง:
 
 ```markdown
-ฉันต้องการสร้างฟีเจอร์ใหม่ชื่อ "[ชื่อฟีเจอร์ เช่น booking หรือ equipment หรือ announcement]" 
-โปรดปฏิบัติตามกฎสถาปัตยกรรมใน AGENTS.md และดูโค้ดตัวอย่างจาก `src/features/sample` เป็นแม่แบบ โดยทำขั้นตอนดังนี้:
-
-1. Data Model:
-   - เพิ่ม Model ใน `prisma/schema.prisma` โดยทุกตารางต้องมี `tenantId String @map("tenant_id") @db.Uuid` และผูก relation กับ `Tenant`
-   - ฟิลด์ที่ต้องการ: [ระบุฟิลด์ เช่น title, description, category, price, status]
-
-2. โครงสร้าง Feature (`src/features/[ชื่อฟีเจอร์]/`):
-   - สร้าง `permissions.ts`: ประกาศสิทธิ์ เช่น `[feature]:read` และ `[feature]:manage`
-   - สร้าง `messages.ts`: ข้อความสองภาษา (TH/EN) ครบทุกฟิลด์, ปุ่ม และสถานะ
-   - สร้าง `_internal/validations.ts`: Zod schema ตรวจสอบความถูกต้อง
-   - สร้าง `_internal/services.ts`: ฟังก์ชัน CRUD (Prisma queries)
-   - สร้าง `_internal/actions.ts`: Server Actions ที่ครอบด้วย runAction และตรวจ requirePermission
-   - สร้าง Public barrels: `actions.ts`, `server.ts`, `index.ts`
-
-3. การลงทะเบียนระบบกลาง:
-   - รวม permissions ใน `src/permissions.ts`
-   - รวม messages ใน `src/i18n/index.ts`
-
-4. หน้าจอ UI (`src/app/(admin)/[ชื่อฟีเจอร์]/`):
-   - สร้าง `page.tsx` (Server Component) ตรวจสิทธิ์และดึงข้อมูลเริ่มต้น
-   - สร้าง `_components/[feature]-client.tsx` (Client Component) ใช้ LiyonCard, DataTable, StatusPill และ LiyonDialog สำหรับเพิ่ม/แก้ไข/ลบ
-   - เพิ่มเมนูใน `src/components/layout/sidebar-nav.ts` พร้อมไอคอนที่เหมาะสมจาก `lucide-react`
+ฉันต้องการพัฒนาเว็บไซต์คณะที่เป็น Portal และ ​Admin โดยเริ่มจาก framwork ของฉันบน github "https://github.com/littlebom/vibe-framework.git"
 ```
 
 ---
