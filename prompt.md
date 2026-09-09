@@ -53,7 +53,7 @@
 
 ### 1.1 โคลนโปรเจกต์และเข้าสู่โฟลเดอร์
 ```bash
-git clone https://github.com/littlebom/vibe-framework.git faculty-app
+ดาวน์โหลดโปรเจคของฉันจาก github "https://github.com/littlebom/vibe-framework.git"
 cd faculty-app
 ```
 
