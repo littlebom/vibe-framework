@@ -1,0 +1,23 @@
+{
+  "//": "A8 — tsconfig.json ตัวหลัก exclude ไฟล์เทสต์ทั้งหมดออกจาก program และ Vitest ทรานส์ไพล์ด้วย esbuild โดยไม่ตรวจชนิด ผลคือ type error ในเทสต์ 173 ตัวไม่เคยโผล่ในเกตที่ประกาศว่า 'check เขียว = เสร็จ' — ไฟล์นี้คือ program ของเทสต์/สคริปต์/ฮาร์เนส เรียกผ่าน npm run type-check:tests",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "incremental": false,
+    "types": ["node", "vitest/globals"]
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.int.test.ts",
+    "src/features/identity/types.ts",
+    "prisma/**/*.ts",
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "vitest.config.ts",
+    "vitest.integration.config.ts",
+    "vitest.setup.ts"
+  ],
+  "exclude": ["node_modules", "e2e/**"]
+}

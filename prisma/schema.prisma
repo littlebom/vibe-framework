@@ -1,0 +1,212 @@
+// VibeCore Framework Starter Kit. ตารางระดับแพลตฟอร์ม (ไม่มี tenant_id): users, permissions, auth_tokens, login_throttles
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ScopeType {
+  ALL
+  CAMPUS
+  ORG_UNIT
+}
+
+enum TokenPurpose {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
+
+model Tenant {
+  id        String   @id @default(uuid()) @db.Uuid
+  code      String   @unique @db.VarChar(50)
+  nameTh    String   @map("name_th") @db.VarChar(255)
+  nameEn    String   @map("name_en") @db.VarChar(255)
+  logoUrl   String?  @map("logo_url") @db.VarChar(500)
+  /// { palette?: "blue"|"coral"|"pink"|"green"|"purple" }
+  settings  Json     @default("{}") @db.JsonB
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  userTenants UserTenant[]
+  roles       Role[]
+  auditLogs   AuditLog[]
+  sampleItems SampleItem[]
+
+  @@map("tenants")
+}
+
+model User {
+  id                 String    @id @default(uuid()) @db.Uuid
+  /// เก็บตัวพิมพ์เล็กเสมอ
+  email              String    @unique @db.VarChar(255)
+  passwordHash       String?   @map("password_hash") @db.VarChar(255)
+  /// ชื่อที่แสดง
+  name               String    @db.VarChar(255)
+  imageUrl           String?   @map("image_url") @db.VarChar(500)
+  /// credentials | google | microsoft
+  provider           String    @default("credentials") @db.VarChar(20)
+  providerId         String?   @map("provider_id") @db.VarChar(255)
+  emailVerified      Boolean   @default(false) @map("email_verified")
+  isActive           Boolean   @default(true) @map("is_active")
+  mustChangePassword Boolean   @default(false) @map("must_change_password")
+  /// th | en | null (= ตามเบราว์เซอร์/ค่าเริ่มต้น)
+  locale             String?   @db.VarChar(5)
+  lastLoginAt        DateTime? @map("last_login_at") @db.Timestamptz()
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+
+  userTenants UserTenant[]
+  authTokens  AuthToken[]
+  auditLogs   AuditLog[]   @relation("AuditActor")
+
+  @@map("users")
+}
+
+model UserTenant {
+  id       String   @id @default(uuid()) @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  tenantId String   @map("tenant_id") @db.Uuid
+  isActive Boolean  @default(true) @map("is_active")
+  joinedAt DateTime @default(now()) @map("joined_at") @db.Timestamptz()
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userRoles UserRole[]
+
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+  @@map("user_tenants")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  /// A-Z 0-9 _ เช่น SUPER_ADMIN
+  code        String   @db.VarChar(50)
+  nameTh      String   @map("name_th") @db.VarChar(100)
+  nameEn      String   @map("name_en") @db.VarChar(100)
+  description String?  @db.VarChar(500)
+  /// แก้สิทธิ์/ลบไม่ได้ · SUPER_ADMIN ได้ทุกสิทธิ์โดยไม่ต้องมีแถวใน role_permissions
+  isSystem    Boolean  @default(false) @map("is_system")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+
+  @@unique([tenantId, code])
+  @@map("roles")
+}
+
+/// ผู้ใช้มีได้หลายแถว (หลายบทบาท / บทบาทเดียวหลายขอบเขต) · unique ที่มี scope_id null ไม่กันซ้ำใน Postgres — service ต้องเขียนแบบลบทั้งชุดแล้วสร้างใหม่
+model UserRole {
+  id           String    @id @default(uuid()) @db.Uuid
+  userTenantId String    @map("user_tenant_id") @db.Uuid
+  roleId       String    @map("role_id") @db.Uuid
+  scopeType    ScopeType @default(ALL) @map("scope_type")
+  /// campus_id หรือ org_unit_id หรือขอบเขตอื่นที่กำหนดเพิ่ม — null เมื่อ scope_type = ALL
+  scopeId      String?   @map("scope_id") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  userTenant UserTenant @relation(fields: [userTenantId], references: [id], onDelete: Cascade)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@unique([userTenantId, roleId, scopeType, scopeId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+/// seed จาก src/permissions.ts ทุกครั้ง ไม่แก้ผ่าน UI
+model Permission {
+  id          String  @id @default(uuid()) @db.Uuid
+  code        String  @unique @db.VarChar(100)
+  module      String  @db.VarChar(50)
+  action      String  @db.VarChar(50)
+  description String? @db.VarChar(255)
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+/// โทเคนใช้ครั้งเดียว — เก็บ sha256 ของโทเคน ไม่เก็บตัวจริง
+model AuthToken {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  purpose   TokenPurpose
+  tokenHash String       @unique @map("token_hash") @db.VarChar(128)
+  /// EMAIL_VERIFY: { newEmail }
+  payload   Json?        @db.JsonB
+  expiresAt DateTime     @map("expires_at") @db.Timestamptz()
+  usedAt    DateTime?    @map("used_at") @db.Timestamptz()
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@map("auth_tokens")
+}
+
+/// กันเดารหัสผ่าน แทน Redis · key = "email:<lower>" หรือ "ip:<addr>"
+model LoginThrottle {
+  key         String    @id @db.VarChar(320)
+  failCount   Int       @default(0) @map("fail_count")
+  lockedUntil DateTime? @map("locked_until") @db.Timestamptz()
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("login_throttles")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  /// เช่น user.create, user.suspend, role.update
+  action    String   @db.VarChar(100)
+  entity    String   @db.VarChar(50)
+  entityId  String   @map("entity_id") @db.VarChar(64)
+  before    Json?    @db.JsonB
+  after     Json?    @db.JsonB
+  ip        String?  @db.VarChar(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  actor  User?  @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, entity, entityId])
+  @@index([tenantId, createdAt])
+  @@map("audit_logs")
+}
+
+/// โมเดลตัวอย่าง (Sample CRUD) สำหรับให้นักเรียนดูเป็นแม่แบบในการพัฒนาฟีเจอร์ใหม่
+model SampleItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  title       String   @db.VarChar(255)
+  description String?  @db.Text
+  status      String   @default("ACTIVE") @db.VarChar(50)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("sample_items")
+}

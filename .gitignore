@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+.env
+.env.*.local
+*.tsbuildinfo
+next-env.d.ts
+src/generated/
+test-results/
+playwright-report/
+e2e/.auth/
+.DS_Store
+.superpowers/

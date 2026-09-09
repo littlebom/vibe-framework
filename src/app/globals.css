@@ -1,0 +1,71 @@
+/* ลำดับ layer: liyon อยู่หลัง base (ชนะ preflight) แต่ก่อน utilities — ต้องประกาศก่อน @import "tailwindcss" */
+@layer theme, base, liyon, components, utilities;
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* ═══ Liyon Theme (generated — ดู scripts/sync-liyon-theme.ts) palettes ก่อนเสมอ · compat หลัง palettes/base ═══ */
+@import "../shared/styles/liyon/liyon-palettes.css" layer(liyon);
+@import "../shared/styles/liyon/liyon-base.css" layer(liyon);
+@import "../shared/styles/liyon/liyon-glass.css" layer(liyon);
+@import "../shared/styles/liyon/liyon-shell.css" layer(liyon);
+@import "../shared/styles/liyon/liyon-compat.css" layer(liyon);
+@import "../shared/styles/liyon/liyon-auth.css" layer(liyon);
+@import "../shared/styles/liyon/liyon-admin.css" layer(liyon);
+@import "../shared/styles/liyon/liyon-pages.css" layer(liyon);
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sarabun), var(--font-inter);
+  --font-thai: var(--font-sarabun), var(--font-inter);
+  --color-brand: var(--brand);
+  --color-brand-light: var(--brand-light);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-ink: var(--brand-ink);
+  --color-on-brand: var(--on-brand);
+  --color-glass: var(--glass);
+  --color-glass-strong: var(--glass-strong);
+  --color-glass-border: var(--glass-border);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-muted: var(--text-muted);
+  --color-success-ink: var(--success-ink);
+  --color-success-bg: var(--success-bg);
+  --color-warning-ink: var(--warning-ink);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger-ink: var(--danger-ink);
+  --color-danger-bg: var(--danger-bg);
+  --color-info-ink: var(--info-ink);
+  --color-info-bg: var(--info-bg);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius-xl);
+}
+
+/* token สี/รัศมีทั้งหมดมาจาก Liyon ([data-palette] ใน palettes + :root ใน base → แปลชื่อใน compat) ห้ามประกาศ :root/.dark ซ้ำที่นี่ */
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground; }
+}

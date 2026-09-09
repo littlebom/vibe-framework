@@ -1,0 +1,7 @@
+{
+  "//": "exclude ต้องระบุเอง: ค่าที่สืบทอดจาก ../tsconfig.json มี \"e2e/**\" อยู่ ซึ่งกินไฟล์ทั้งโฟลเดอร์นี้ทิ้ง ทำให้ tsc ตอบ TS18003 (no inputs) แทนที่จะตรวจอะไรเลย — เห็นครั้งแรกตอน A8 เพิ่ม type-check:tests ที่เรียกไฟล์นี้จริง",
+  "extends": "../tsconfig.json",
+  "compilerOptions": { "types": ["node"], "noEmit": true },
+  "include": ["**/*.ts", "../playwright.config.ts"],
+  "exclude": ["../node_modules"]
+}
